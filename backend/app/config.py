@@ -6,36 +6,38 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0"
     DEBUG: bool = True
     
-    # Database - auto-detect: use SQLite if no Postgres DSN set
     DATABASE_URL: str = "sqlite+aiosqlite:///./mindshift.db"
     DATABASE_URL_SYNC: str = "sqlite:///./mindshift.db"
-    USE_SQLITE: bool = True  # Set False for PostgreSQL
+    USE_SQLITE: str = "true"  # "true" or "false" as string
     
-    # Redis (optional, not used in SQLite mode)
     REDIS_URL: str = ""
-    
-    # JWT
     SECRET_KEY: str = "mindshift-dev-secret-key-change-in-production-32!"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
-    
-    # AI (ZhipuAI / OpenAI compatible)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
     AI_API_KEY: Optional[str] = None
     AI_BASE_URL: str = "https://open.bigmodel.cn/api/paas/v4"
     AI_MODEL: str = "glm-4-flash"
-    
-    # Stripe
     STRIPE_SECRET_KEY: Optional[str] = None
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
-    
-    # App Store
     APP_BUNDLE_ID: str = "com.nianzhuan.mindshift"
-    
-    # CORS
     CORS_ORIGINS: str = "*"
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+
+    def is_sqlite(self) -> bool:
+        return self.USE_SQLITE.strip().lower() in ("true", "1", "yes")
+
+    def async_db_url(self) -> str:
+        if self.is_sqlite():
+            return self.DATABASE_URL
+        # Strip any existing driver and add asyncpg
+        url = self.DATABASE_URL
+        if "+" in url.split("://")[0]:
+            url = url.replace(url.split("://")[0].split("+")[0], "postgresql+asyncpg")
+        elif url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://")
+        return url
 
 settings = Settings()
