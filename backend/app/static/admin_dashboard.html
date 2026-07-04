@@ -7,473 +7,257 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --primary: #00BCD4;
-    --primary-dark: #0097A7;
-    --primary-light: #E0F7FA;
-    --bg: #F5F7FB;
-    --card-bg: #FFFFFF;
-    --text: #1a1a2e;
-    --text-secondary: #6B7280;
-    --border: #E5E7EB;
-    --success: #10B981;
-    --warning: #F59E0B;
-    --danger: #EF4444;
-    --chart-bg: #FFFFFF;
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-  /* ── Sidebar ── */
-  .layout { display: flex; min-height: 100vh; }
-  .sidebar {
-    width: 240px;
-    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-    color: #fff;
-    padding: 0;
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    z-index: 100;
-    overflow-y: auto;
-  }
-  .sidebar-logo {
-    padding: 24px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    text-align: center;
-  }
-  .sidebar-logo h1 { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
-  .sidebar-logo span { font-size: 11px; color: rgba(255,255,255,0.5); }
-  .sidebar-nav { padding: 12px 0; }
-  .sidebar-nav a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 24px;
-    color: rgba(255,255,255,0.65);
-    text-decoration: none;
-    font-size: 14px;
-    transition: all 0.2s;
-    border-left: 3px solid transparent;
-  }
-  .sidebar-nav a:hover, .sidebar-nav a.active {
-    color: #fff;
-    background: rgba(0,188,212,0.12);
-    border-left-color: var(--primary);
-  }
-  .sidebar-nav a i { width: 20px; text-align: center; font-size: 16px; }
-
-  /* ── Main ── */
-  .main {
-    margin-left: 240px;
-    flex: 1;
-    padding: 0;
-    width: calc(100% - 240px);
-  }
-  .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 32px;
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-  .topbar h2 { font-size: 20px; font-weight: 600; }
-  .topbar-right { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-secondary); }
-  .topbar-right .update-btn {
-    padding: 6px 16px;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background 0.2s;
-  }
-  .topbar-right .update-btn:hover { background: var(--primary-dark); }
-  .topbar-right .update-btn:disabled { opacity: 0.6; cursor: wait; }
-
-  .content { padding: 24px 32px; }
-
-  /* ── Stat cards ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-  .stat-icon {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-  .stat-icon.blue { background: #E0F7FA; color: var(--primary-dark); }
-  .stat-icon.green { background: #D1FAE5; color: #059669; }
-  .stat-icon.purple { background: #EDE9FE; color: #7C3AED; }
-  .stat-icon.amber { background: #FEF3C7; color: #D97706; }
-  .stat-icon.rose { background: #FCE7F3; color: #DB2777; }
-  .stat-icon.sky { background: #E0F2FE; color: #0284C7; }
-  .stat-info h3 { font-size: 24px; font-weight: 700; line-height: 1.2; }
-  .stat-info p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-  .stat-info .trend { font-size: 12px; margin-top: 4px; }
-  .stat-info .trend.up { color: var(--success); }
-  .stat-info .trend.down { color: var(--danger); }
-
-  /* ── Charts row ── */
-  .charts-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .chart-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  }
-  .chart-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .chart-card h3 i { color: var(--primary); }
-
-  /* ── Triple columns ── */
-  .triple-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .info-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  }
-  .info-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-  .info-card h3 i { color: var(--primary); }
-
-  /* ── Table ── */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; padding: 10px 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border); white-space: nowrap; }
-  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
-  tr:hover td { background: #F9FAFB; }
-  .badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .badge-free { background: #F3F4F6; color: #6B7280; }
-  .badge-monthly { background: #E0F7FA; color: #0097A7; }
-  .badge-yearly { background: #EDE9FE; color: #7C3AED; }
-  .badge-premium { background: #FEF3C7; color: #D97706; }
-  .badge-green { background: #D1FAE5; color: #059669; }
-
-  .stat-list { list-style: none; }
-  .stat-list li {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .stat-list li:last-child { border-bottom: none; }
-  .stat-list li span:last-child { font-weight: 600; }
-
-  /* ── Loading overlay ── */
-  #loadingOverlay {
-    position: fixed; inset: 0;
-    background: rgba(255,255,255,0.85);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
-  #loadingOverlay.show { display: flex; }
-  .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── Skeleton ── */
-  .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-  /* ── Responsive ── */
-  @media (max-width: 1024px) {
-    .sidebar { width: 60px; }
-    .sidebar-logo h1, .sidebar-logo span, .sidebar-nav a span { display: none; }
-    .sidebar-nav a { justify-content: center; padding: 14px; border-left: none; }
-    .main { margin-left: 60px; width: calc(100% - 60px); }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .charts-row { grid-template-columns: 1fr; }
-    .triple-grid { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 640px) {
-    .stats-grid { grid-template-columns: 1fr; }
-    .content { padding: 16px; }
-    .topbar { padding: 12px 16px; flex-direction: column; gap: 8px; }
-  }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#00BCD4;--primary-dark:#0097A7;--bg:#F5F7FB;--card-bg:#FFFFFF;--text:#1a1a2e;--text-secondary:#6B7280;--border:#E5E7EB;--success:#10B981;--warning:#F59E0B}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 100%);color:#fff;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center}
+.sidebar-logo h1{font-size:16px;font-weight:700;letter-spacing:1px}
+.sidebar-logo span{font-size:11px;color:rgba(255,255,255,0.5)}
+.sidebar-nav{padding:8px 0}
+.sidebar-nav a{display:flex;align-items:center;gap:10px;padding:10px 18px;color:rgba(255,255,255,0.6);text-decoration:none;font-size:13px;transition:all .2s;border-left:3px solid transparent;cursor:pointer}
+.sidebar-nav a:hover,.sidebar-nav a.active{color:#fff;background:rgba(0,188,212,0.12);border-left-color:var(--primary)}
+.sidebar-nav a i{width:18px;text-align:center;font-size:14px}
+.main{margin-left:220px;flex:1;width:calc(100% - 220px)}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:var(--card-bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.topbar h2{font-size:17px;font-weight:600}
+.topbar h2 i{color:var(--primary);margin-right:8px}
+.topbar-right{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text-secondary)}
+.content{padding:16px 24px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:var(--card-bg);border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;align-items:center;gap:12px}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.stat-icon.blue{background:#E0F7FA;color:var(--primary-dark)}
+.stat-icon.green{background:#D1FAE5;color:#059669}
+.stat-icon.purple{background:#EDE9FE;color:#7C3AED}
+.stat-icon.amber{background:#FEF3C7;color:#D97706}
+.stat-icon.rose{background:#FCE7F3;color:#DB2777}
+.stat-icon.sky{background:#E0F2FE;color:#0284C7}
+.stat-info h3{font-size:20px;font-weight:700}
+.stat-info p{font-size:12px;color:var(--text-secondary)}
+.chart-card,.info-card{background:var(--card-bg);border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:14px}
+.chart-card h3,.info-card h3{font-size:14px;font-weight:600;margin-bottom:10px}
+.chart-card h3 i,.info-card h3 i{color:var(--primary)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--border)}
+tr:hover td{background:#F9FAFB}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.badge-free{background:#F3F4F6;color:#6B7280}
+.badge-monthly{background:#E0F7FA;color:#0097A7}
+.badge-yearly{background:#EDE9FE;color:#7C3AED}
+.badge-premium{background:#FEF3C7;color:#D97706}
+.stat-list{list-style:none}
+.stat-list li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.stat-list li:last-child{border-bottom:none}
+.stat-list li span:last-child{font-weight:600}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+/* Login */
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-box{background:#fff;border-radius:16px;padding:40px;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.login-box h2{font-size:22px;margin-bottom:4px}
+.login-box p{font-size:13px;color:var(--text-secondary);margin-bottom:24px}
+.login-box input{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:8px;font-size:15px;outline:none;margin-bottom:16px;transition:border-color .2s}
+.login-box input:focus{border-color:var(--primary)}
+.login-box button{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;transition:background .2s}
+.login-box button:hover{background:var(--primary-dark)}
+.login-error{color:#EF4444;font-size:13px;margin-top:8px;display:none}
+@media(max-width:1024px){.sidebar{width:56px}.sidebar-logo h1,.sidebar-logo span,.sidebar-nav a span{display:none}.sidebar-nav a{justify-content:center;padding:12px;border-left:none}.main{margin-left:56px;width:calc(100% - 56px)}.charts-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<div id="loadingOverlay"><div class="spinner"></div></div>
+<!-- Login Overlay -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h2><i class="fas fa-shield-alt" style="color:var(--primary)"></i> MindShift</h2>
+    <p>管理控制台</p>
+    <input type="password" id="loginPass" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter')checkLogin()">
+    <button onclick="checkLogin()"><i class="fas fa-lock"></i> 进入看板</button>
+    <div class="login-error" id="loginError">密码错误，请重试</div>
+  </div>
+</div>
 
 <div class="layout">
-
-  <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <h1>MindShift</h1>
-      <span>管理控制台</span>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="#" class="active" onclick="return switchPage('dashboard')"><i class="fas fa-chart-pie"></i><span>总览看板</span></a>
-      <a href="#" onclick="return switchPage('users')"><i class="fas fa-users"></i><span>用户管理</span></a>
-      <a href="#" onclick="return switchPage('revenue')"><i class="fas fa-credit-card"></i><span>付费分析</span></a>
-      <a href="#" onclick="return switchPage('content')"><i class="fas fa-book-open"></i><span>内容管理</span></a>
-      <a href="#" onclick="return switchPage('growth')"><i class="fas fa-chart-line"></i><span>增长趋势</span></a>
-      <a href="#" onclick="return switchPage('settings')"><i class="fas fa-cog"></i><span>系统设置</span></a>
+    <div class="sidebar-logo"><h1>MindShift</h1><span>管理控制台</span></div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <a href="#" data-page="dashboard" class="active"><i class="fas fa-chart-pie"></i><span>总览看板</span></a>
+      <a href="#" data-page="users"><i class="fas fa-users"></i><span>用户管理</span></a>
+      <a href="#" data-page="revenue"><i class="fas fa-credit-card"></i><span>付费分析</span></a>
+      <a href="#" data-page="content"><i class="fas fa-book-open"></i><span>内容管理</span></a>
+      <a href="#" data-page="growth"><i class="fas fa-chart-line"></i><span>增长趋势</span></a>
+      <a href="#" data-page="settings"><i class="fas fa-cog"></i><span>系统设置</span></a>
     </nav>
   </aside>
-
-  <!-- Main -->
   <div class="main">
     <div class="topbar">
-      <h2><i class="fas fa-chart-pie" style="color:var(--primary);margin-right:8px;"></i>总览看板</h2>
+      <h2><i class="fas fa-chart-pie"></i><span id="pageTitle">总览看板</span></h2>
       <div class="topbar-right">
-        <span id="updateTime"><i class="far fa-clock"></i> 加载中...</span>
-        <button class="update-btn" onclick="loadData()"><i class="fas fa-sync-alt"></i> 刷新数据</button>
+        <span id="updateTime"><i class="far fa-clock"></i> 实时</span>
+        <a href="#" onclick="logout()" style="color:var(--text-secondary);font-size:13px;text-decoration:none"><i class="fas fa-sign-out-alt"></i> 退出</a>
       </div>
     </div>
-
-    <div class="content">
-
-      <!-- Stats Row -->
-      <div class="stats-grid" id="statCards">
-        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-users"></i></div><div class="stat-info"><h3 class="skeleton" style="width:60px">&nbsp;</h3><p>总注册用户</p></div></div>
-        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-user-plus"></i></div><div class="stat-info"><h3 class="skeleton" style="width:40px">&nbsp;</h3><p>本月新增</p></div></div>
-        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-crown"></i></div><div class="stat-info"><h3 class="skeleton" style="width:40px">&nbsp;</h3><p>付费会员</p></div></div>
-        <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-dollar-sign"></i></div><div class="stat-info"><h3 class="skeleton" style="width:60px">&nbsp;</h3><p>月估算收入 (MRR)</p></div></div>
-        <div class="stat-card"><div class="stat-icon rose"><i class="fas fa-signal"></i></div><div class="stat-info"><h3 class="skeleton" style="width:40px">&nbsp;</h3><p>付费转化率</p></div></div>
-        <div class="stat-card"><div class="stat-icon sky"><i class="fas fa-table-cells"></i></div><div class="stat-info"><h3 class="skeleton" style="width:40px">&nbsp;</h3><p>课程总数</p></div></div>
-      </div>
-
-      <!-- Charts -->
-      <div class="charts-row">
-        <div class="chart-card">
-          <h3><i class="fas fa-chart-area"></i> 近30天用户注册趋势</h3>
-          <canvas id="growthChart" height="200"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3><i class="fas fa-chart-doughnut"></i> 会员分布</h3>
-          <canvas id="memberChart" height="200"></canvas>
-        </div>
-      </div>
-
-      <!-- Triple bottom -->
-      <div class="triple-grid">
-        <div class="info-card">
-          <h3><i class="fas fa-cubes"></i> 内容数据</h3>
-          <ul class="stat-list" id="contentStats"></ul>
-        </div>
-        <div class="info-card">
-          <h3><i class="fas fa-credit-card"></i> 收入概览</h3>
-          <ul class="stat-list" id="revenueStats"></ul>
-        </div>
-        <div class="info-card">
-          <h3><i class="fas fa-users"></i> 用户活跃度</h3>
-          <ul class="stat-list" id="activityStats"></ul>
-        </div>
-      </div>
-
-      <!-- Recent Users Table -->
-      <div class="info-card">
-        <h3><i class="fas fa-history"></i> 最近注册用户</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>昵称</th><th>邮箱</th><th>会员方案</th><th>注册时间</th><th>最后登录</th></tr></thead>
-            <tbody id="recentUsersTable"></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
+    <div class="content" id="mainContent"></div>
   </div>
 </div>
 
 <script>
-let growthChartInstance = null;
-let memberChartInstance = null;
+// ─── Login ───
+const PASSWORD_HASH = "4d73c51c7d07050c10dc34a482a68a1f36a04cb3f83283d00ef8262e101269e3"; // SHA256 of "MindShift2026"
 
-async function loadData() {
-  const loading = document.getElementById('loadingOverlay');
-  const btn = document.querySelector('.update-btn');
-  loading.classList.add('show');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 刷新中...';
+function sha256(str){
+  const encoder = new TextEncoder();
+  return crypto.subtle.digest('SHA-256',encoder.encode(str)).then(function(buf){
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  });
+}
 
-  try {
-    const res = await fetch('/api/v1/dashboard/summary');
-    if (!res.ok) throw new Error('API 请求失败: ' + res.status);
-    const d = await res.json();
-
-    document.getElementById('updateTime').innerHTML = '<i class="far fa-clock"></i> 更新于 ' + new Date().toLocaleString('zh-CN');
-
-    // ── Stat Cards ──
-    const u = d.users, m = d.membership, r = d.revenue, c = d.content;
-    document.getElementById('statCards').innerHTML = `
-      <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-users"></i></div><div class="stat-info"><h3>${u.total}</h3><p>总注册用户</p><div class="trend up"><i class="fas fa-arrow-up"></i> 今日 +${u.new_today}</div></div></div>
-      <div class="stat-card"><div class="stat-icon green"><i class="fas fa-user-plus"></i></div><div class="stat-info"><h3>${u.new_month}</h3><p>本月新增</p><div class="trend up"><i class="fas fa-arrow-up"></i> 近7天 +${u.new_week}</div></div></div>
-      <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-crown"></i></div><div class="stat-info"><h3>${m.premium_total}</h3><p>付费会员</p><div class="trend up">月付 ${m.monthly} / 年付 ${m.yearly}</div></div></div>
-      <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-dollar-sign"></i></div><div class="stat-info"><h3>¥${r.estimated_mrr.toFixed(0)}</h3><p>月估算收入 (MRR)</p><div class="trend up">月度 ¥${r.monthly_rev} / 年度 ¥${r.yearly_rev}</div></div></div>
-      <div class="stat-card"><div class="stat-icon rose"><i class="fas fa-signal"></i></div><div class="stat-info"><h3>${m.conversion_rate}%</h3><p>付费转化率</p><div class="trend up">免费 ${m.free} 人</div></div></div>
-      <div class="stat-card"><div class="stat-icon sky"><i class="fas fa-table-cells"></i></div><div class="stat-info"><h3>${c.courses}</h3><p>课程总数</p><div class="trend up">${c.lessons} 课时 / ${c.cases} 案例</div></div></div>
-    `;
-
-    // ── Content Stats ──
-    document.getElementById('contentStats').innerHTML = `
-      <li><span>课程</span><span>${c.courses} 门</span></li>
-      <li><span>课时</span><span>${c.lessons} 节</span></li>
-      <li><span>实战案例</span><span>${c.cases} 个</span></li>
-      <li><span>角色扮演场景</span><span>${c.scenarios} 个</span></li>
-      <li><span>知识卡片</span><span>${c.knowledge_cards || 0} 张</span></li>
-      <li><span>社区帖子</span><span>${c.posts} 条</span></li>
-      <li><span>训练记录</span><span>${c.training_sessions} 条</span></li>
-    `;
-
-    // ── Revenue ──
-    document.getElementById('revenueStats').innerHTML = `
-      <li><span>月估算收入 (MRR)</span><span>¥${r.estimated_mrr.toFixed(0)}</span></li>
-      <li><span>月度订阅收入</span><span>¥${r.monthly_rev}</span></li>
-      <li><span>年度订阅收入</span><span>¥${r.yearly_rev}</span></li>
-      <li><span>月付用户</span><span>${m.monthly} 人</span></li>
-      <li><span>年付用户</span><span>${m.yearly} 人</span></li>
-      <li><span>免费用户</span><span>${m.free} 人</span></li>
-    `;
-
-    // ── Activity ──
-    document.getElementById('activityStats').innerHTML = `
-      <li><span>30天内活跃用户</span><span>${u.active_30d} 人</span></li>
-      <li><span>活跃率</span><span>${u.total ? (u.active_30d / u.total * 100).toFixed(1) : 0}%</span></li>
-      <li><span>今日新增</span><span>${u.new_today} 人</span></li>
-      <li><span>本周新增</span><span>${u.new_week} 人</span></li>
-      <li><span>本月新增</span><span>${u.new_month} 人</span></li>
-    `;
-
-    // ── Growth Chart ──
-    if (growthChartInstance) growthChartInstance.destroy();
-    const gCtx = document.getElementById('growthChart').getContext('2d');
-    growthChartInstance = new Chart(gCtx, {
-      type: 'line',
-      data: {
-        labels: d.growth.labels,
-        datasets: [{
-          label: '新注册用户',
-          data: d.growth.values,
-          borderColor: '#00BCD4',
-          backgroundColor: 'rgba(0,188,212,0.10)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-          borderWidth: 2,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } },
-          x: { ticks: { font: { size: 10 }, maxTicksLimit: 15 } }
-        }
-      }
-    });
-
-    // ── Membership Doughnut ──
-    if (memberChartInstance) memberChartInstance.destroy();
-    const mCtx = document.getElementById('memberChart').getContext('2d');
-    memberChartInstance = new Chart(mCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['免费用户', '月付会员', '年付会员'],
-        datasets: [{
-          data: [m.free, m.monthly, m.yearly],
-          backgroundColor: ['#E5E7EB', '#00BCD4', '#7C3AED'],
-          borderWidth: 0,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { padding: 16, usePointStyle: true, font: { size: 12 } }
-          }
-        }
-      }
-    });
-
-    // ── Recent Users Table ──
-    const tbody = document.getElementById('recentUsersTable');
-    if (d.recent_users.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);padding:24px;">暂无注册用户</td></tr>';
+function checkLogin(){
+  const pass = document.getElementById('loginPass').value;
+  sha256(pass).then(function(hash){
+    if(hash === PASSWORD_HASH){
+      document.getElementById('loginOverlay').style.display = 'none';
+      localStorage.setItem('mindshift_logged_in', '1');
+      initDashboard();
     } else {
-      tbody.innerHTML = d.recent_users.map(u => {
-        const planBadge = u.is_premium
-          ? `<span class="badge badge-premium"><i class="fas fa-crown"></i> ${u.plan === 'yearly' ? '年付' : '月付'}</span>`
-          : `<span class="badge badge-free">免费</span>`;
-        const created = u.created_at ? new Date(u.created_at).toLocaleString('zh-CN') : '-';
-        const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString('zh-CN') : '从未登录';
-        return `<tr><td><strong>${u.nickname}</strong></td><td>${u.email}</td><td>${planBadge}</td><td>${created}</td><td>${lastLogin}</td></tr>`;
-      }).join('');
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginPass').value = '';
+      document.getElementById('loginPass').focus();
     }
+  });
+}
 
-  } catch (err) {
-    console.error(err);
-    // Show error state
-    document.getElementById('statCards').innerHTML = `
-      <div class="stat-card" style="grid-column:1/-1;justify-content:center;padding:40px;text-align:center;">
-        <div style="color:var(--danger);font-size:40px;margin-bottom:12px;"><i class="fas fa-exclamation-triangle"></i></div>
-        <h3 style="margin-bottom:8px;">无法加载数据</h3>
-        <p style="color:var(--text-secondary);font-size:14px;">
-          ${err.message}<br>
-          <small>请确认后端服务已启动：在 backend 目录运行 <code>uvicorn app.main:app --reload</code></small>
-        </p>
-        <button class="update-btn" onclick="loadData()" style="margin-top:16px;"><i class="fas fa-redo"></i> 重试</button>
-      </div>
-    `;
-  } finally {
-    loading.classList.remove('show');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-sync-alt"></i> 刷新数据';
+function logout(){
+  localStorage.removeItem('mindshift_logged_in');
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+// ─── Dashboard ───
+let charts = {};
+const pageTitles = {dashboard:'总览看板',users:'用户管理',revenue:'付费分析',content:'内容管理',growth:'增长趋势',settings:'系统设置'};
+
+function switchPage(page){
+  document.querySelectorAll('.sidebar-nav a').forEach(function(a){ a.classList.remove('active'); });
+  var link = document.querySelector('.sidebar-nav a[data-page="'+page+'"]');
+  if(link) link.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[page] || page;
+  loadPage(page);
+}
+
+function loadPage(page){
+  var el = document.getElementById('mainContent');
+  el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-secondary)"><i class="fas fa-spinner fa-spin fa-2x"></i><p style="margin-top:12px">加载中...</p></div>';
+  try {
+    if(page==='dashboard') loadDashboard();
+    else if(page==='users') loadUsers();
+    else if(page==='revenue') loadRevenue();
+    else if(page==='content') loadContent();
+    else if(page==='growth') loadGrowth();
+    else if(page==='settings') loadSettings();
+    document.getElementById('updateTime').innerHTML = '<i class="far fa-clock"></i> '+new Date().toLocaleString('zh-CN');
+  } catch(e) {
+    el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--danger)"><i class="fas fa-exclamation-triangle fa-2x"></i><p style="margin-top:12px">'+e.message+'</p></div>';
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadData);
+async function api(url){ var r = await fetch(url); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+function fmt(d){ if(!d) return ''; try{return new Date(d).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return d} }
+
+// Sidebar click handler
+document.getElementById('sidebarNav').addEventListener('click', function(e){
+  var link = e.target.closest('a');
+  if(link && link.dataset.page){
+    e.preventDefault();
+    switchPage(link.dataset.page);
+  }
+});
+
+// Pages
+async function loadDashboard(){
+  var el = document.getElementById('mainContent');
+  el.innerHTML = '<div class="stats-grid" id="ds"></div><div class="charts-row" id="dc"></div><div class="info-card"><h3><i class="fas fa-history"></i> 最近注册</h3><div class="table-wrap"><table><thead><tr><th>昵称</th><th>邮箱</th><th>会员</th><th>注册时间</th><th>最后登录</th></tr></thead><tbody id="dr"></tbody></table></div></div>';
+  var d = await api('/api/v1/dashboard/summary');
+  var u=d.users,m=d.membership,rv=d.revenue,c=d.content;
+  document.getElementById('ds').innerHTML =
+    '<div class="stat-card"><div class="stat-icon blue"><i class="fas fa-users"></i></div><div class="stat-info"><h3>'+u.total+'</h3><p>总注册用户</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon green"><i class="fas fa-user-plus"></i></div><div class="stat-info"><h3>'+u.new_month+'</h3><p>本月新增</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon purple"><i class="fas fa-crown"></i></div><div class="stat-info"><h3>'+m.premium_total+'</h3><p>付费会员</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon amber"><i class="fas fa-dollar-sign"></i></div><div class="stat-info"><h3>¥'+rv.estimated_mrr.toFixed(0)+'</h3><p>月估算收入</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon rose"><i class="fas fa-signal"></i></div><div class="stat-info"><h3>'+m.conversion_rate+'%</h3><p>付费转化率</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon sky"><i class="fas fa-table-cells"></i></div><div class="stat-info"><h3>'+c.courses+'</h3><p>课程总数</p></div></div>';
+  document.getElementById('dc').innerHTML = '<div class="chart-card"><h3><i class="fas fa-chart-area"></i> 近30天注册趋势</h3><canvas id="gChart" height="180"></canvas></div><div class="chart-card"><h3><i class="fas fa-chart-doughnut"></i> 会员分布</h3><canvas id="mChart" height="180"></canvas></div>';
+  if(charts.g) charts.g.destroy(); if(charts.m) charts.m.destroy();
+  charts.g = new Chart(document.getElementById('gChart'),{type:'line',data:{labels:d.growth.labels,datasets:[{label:'新用户',data:d.growth.values,borderColor:'#00BCD4',backgroundColor:'rgba(0,188,212,0.08)',fill:true,tension:.4,pointRadius:3,borderWidth:2}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  charts.m = new Chart(document.getElementById('mChart'),{type:'doughnut',data:{labels:['免费','月付','年付'],datasets:[{data:[m.free,m.monthly,m.yearly],backgroundColor:['#E5E7EB','#00BCD4','#7C3AED'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{padding:10,usePointStyle:true,font:{size:11}}}}}});
+  var tb = document.getElementById('dr');
+  if(!d.recent_users.length) tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary)">暂无</td></tr>';
+  else tb.innerHTML = d.recent_users.map(function(u){ var b=u.is_premium?'<span class="badge badge-premium"><i class="fas fa-crown"></i> '+(u.plan==='yearly'?'年付':'月付')+'</span>':'<span class="badge badge-free">免费</span>'; return '<tr><td><strong>'+u.nickname+'</strong></td><td>'+u.email+'</td><td>'+b+'</td><td>'+fmt(u.created_at)+'</td><td>'+(fmt(u.last_login)||'从未')+'</td></tr>'; }).join('');
+}
+
+async function loadUsers(){
+  var d = await api('/api/v1/dashboard/users');
+  var tb = d.users.length ? d.users.map(function(u){ var b=u.is_premium?'<span class="badge badge-premium"><i class="fas fa-crown"></i> '+(u.plan==='yearly'?'年付':'月付')+'</span>':'<span class="badge badge-free">免费</span>'; return '<tr><td><strong>'+u.nickname+'</strong></td><td>'+u.email+'</td><td>'+b+'</td><td>'+fmt(u.created_at)+'</td><td>'+(fmt(u.last_login)||'从未')+'</td></tr>'; }).join('') : '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary)">暂无用户</td></tr>';
+  document.getElementById('mainContent').innerHTML = '<div class="info-card"><h3><i class="fas fa-users"></i> 用户列表 <span style="font-weight:400;font-size:12px;color:var(--text-secondary)">共 '+d.total+' 人</span></h3><div class="table-wrap"><table><thead><tr><th>昵称</th><th>邮箱</th><th>会员</th><th>注册时间</th><th>最后登录</th></tr></thead><tbody>'+tb+'</tbody></table></div></div>';
+}
+
+async function loadRevenue(){
+  var d = await api('/api/v1/dashboard/revenue'), s=d.summary;
+  document.getElementById('mainContent').innerHTML =
+    '<div class="stats-grid"><div class="stat-card"><div class="stat-icon purple"><i class="fas fa-crown"></i></div><div class="stat-info"><h3>'+s.monthly_users+'</h3><p>月付用户</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon indigo" style="background:#EDE9FE;color:#7C3AED"><i class="fas fa-crown"></i></div><div class="stat-info"><h3>'+s.yearly_users+'</h3><p>年付用户</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon amber"><i class="fas fa-dollar-sign"></i></div><div class="stat-info"><h3>¥'+s.mrr+'</h3><p>月估算收入</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon green"><i class="fas fa-percent"></i></div><div class="stat-info"><h3>'+s.conversion_rate+'%</h3><p>付费转化率</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon rose"><i class="fas fa-chart-line"></i></div><div class="stat-info"><h3>¥'+s.arpu+'</h3><p>每用户月均</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon blue"><i class="fas fa-users"></i></div><div class="stat-info"><h3>'+s.total_users+'</h3><p>用户总数</p></div></div></div>'+
+    '<div class="info-card"><h3><i class="fas fa-table"></i> 会员方案对比</h3><div class="table-wrap"><table><thead><tr><th>方案</th><th>价格</th><th>用户数</th><th>年收入</th><th>占比</th></tr></thead><tbody>'+
+    d.plans.map(function(p){ var pct=s.total_users?(p.users/s.total_users*100).toFixed(1):0; return '<tr><td><strong>'+p.name+'</strong></td><td>'+(p.price===0?'免费':'¥'+p.price)+'</td><td>'+p.users+'</td><td>¥'+p.revenue+'</td><td>'+pct+'%</td></tr>'; }).join('')+
+    '</tbody></table></div></div>';
+}
+
+async function loadContent(){
+  var d = await api('/api/v1/dashboard/content'), c=d.counts;
+  document.getElementById('mainContent').innerHTML =
+    '<div class="stats-grid">'+
+    '<div class="stat-card"><div class="stat-icon blue"><i class="fas fa-book"></i></div><div class="stat-info"><h3>'+c.courses+'</h3><p>课程</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon green"><i class="fas fa-file-alt"></i></div><div class="stat-info"><h3>'+c.lessons+'</h3><p>课时</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon purple"><i class="fas fa-briefcase"></i></div><div class="stat-info"><h3>'+c.cases+'</h3><p>实战案例</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon amber"><i class="fas fa-theater-masks"></i></div><div class="stat-info"><h3>'+c.scenarios+'</h3><p>角色扮演</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon rose"><i class="fas fa-lightbulb"></i></div><div class="stat-info"><h3>'+c.knowledge_cards+'</h3><p>知识卡片</p></div></div>'+
+    '<div class="stat-card"><div class="stat-icon sky"><i class="fas fa-trophy"></i></div><div class="stat-info"><h3>'+c.achievements+'</h3><p>成就徽章</p></div></div></div>'+
+    '<div class="info-card"><h3><i class="fas fa-list"></i> 课程列表</h3><div class="table-wrap"><table><thead><tr><th>课程名称</th><th>难度</th><th>课时</th><th>类型</th></tr></thead><tbody>'+
+    (d.courses.length?d.courses.map(function(c){ return '<tr><td><strong>'+c.title+'</strong></td><td>'+c.level+'</td><td>'+c.lessons+'节</td><td>'+(c.is_premium?'<span class="badge badge-premium">会员</span>':'<span class="badge badge-free">免费</span>')+'</td></tr>'; }).join(''):'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-secondary)">暂无</td></tr>')+
+    '</tbody></table></div></div>';
+}
+
+async function loadGrowth(){
+  var d = await api('/api/v1/dashboard/growth');
+  document.getElementById('mainContent').innerHTML = '<div class="chart-card"><h3><i class="fas fa-chart-bar"></i> 每日注册(90天)</h3><canvas id="g2Chart" height="180"></canvas></div><div class="chart-card"><h3><i class="fas fa-chart-area"></i> 累计用户</h3><canvas id="gcChart" height="180"></canvas></div>';
+  if(charts.g2) charts.g2.destroy(); if(charts.gc) charts.gc.destroy();
+  charts.g2 = new Chart(document.getElementById('g2Chart'),{type:'bar',data:{labels:d.daily_registration.labels,datasets:[{label:'新用户',data:d.daily_registration.values,backgroundColor:'rgba(0,188,212,0.6)',borderRadius:2}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  charts.gc = new Chart(document.getElementById('gcChart'),{type:'line',data:{labels:d.cumulative_users.labels,datasets:[{label:'累计',data:d.cumulative_users.values,borderColor:'#7C3AED',backgroundColor:'rgba(124,58,237,0.08)',fill:true,tension:.3,pointRadius:0,borderWidth:2}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+}
+
+async function loadSettings(){
+  var d = await api('/api/v1/dashboard/system');
+  document.getElementById('mainContent').innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="info-card"><h3><i class="fas fa-server"></i> 系统信息</h3><ul class="stat-list"><li><span>应用名称</span><span>'+d.app_name+'</span></li><li><span>版本</span><span>'+d.version+'</span></li><li><span>服务器时间</span><span>'+d.server_time+'</span></li><li><span>数据库</span><span>'+d.database+'</span></li></ul></div><div class="info-card"><h3><i class="fas fa-link"></i> 访问入口</h3><ul class="stat-list"><li><span>管理看板</span><span><a href="/admin" style="color:var(--primary)">/admin</a></span></li><li><span>API 文档</span><span><a href="/docs" style="color:var(--primary)">/docs</a></span></li><li><span>健康检查</span><span><a href="/api/v1/health" style="color:var(--primary)">/health</a></span></li></ul></div></div>';
+}
+
+function initDashboard(){
+  if(localStorage.getItem('mindshift_logged_in') === '1'){
+    document.getElementById('loginOverlay').style.display = 'none';
+    switchPage('dashboard');
+  }
+}
+
+// Check if already logged in
+if(localStorage.getItem('mindshift_logged_in') === '1'){
+  document.getElementById('loginOverlay').style.display = 'none';
+  initDashboard();
+}
 </script>
 </body>
 </html>
