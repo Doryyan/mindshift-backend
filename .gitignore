@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+.venv/
+venv/
+
+# Node
+node_modules/
+vendor/
+
+# iOS build
+ios/Pods/
+ios/build/
+*.xcworkspace
+*.pbxuser
+
+# Android build
+android/.gradle/
+android/app/build/
+
+# Environment
+.env
+*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend data (SQLite local)
+backend/mindshift.db
+
+# Screenshots are user's own media
+docs/截图/

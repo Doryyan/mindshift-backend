@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: mindshift-api
+    env: docker
+    repo: https://github.com/YOUR_USERNAME/NLP-language-coach  # 部署前改成你的 GitHub 仓库地址
+    branch: main
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mindshift-db
+          property: connectionString
+      - key: DATABASE_URL_SYNC
+        fromDatabase:
+          name: mindshift-db
+          property: connectionString
+      - key: USE_SQLITE
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: AI_API_KEY
+        sync: false
+    healthCheckPath: /api/v1/health
+
+databases:
+  - name: mindshift-db
+    plan: free
+    region: ohio
