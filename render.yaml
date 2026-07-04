@@ -2,7 +2,7 @@ services:
   - type: web
     name: mindshift-api
     env: docker
-    repo: https://github.com/YOUR_USERNAME/NLP-language-coach  # 部署前改成你的 GitHub 仓库地址
+    repo: https://github.com/Doryyan/mindshift-backend
     branch: main
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
