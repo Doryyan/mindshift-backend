@@ -152,12 +152,12 @@ function loadPage(page){
   var el = document.getElementById('mainContent');
   el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-secondary)"><i class="fas fa-spinner fa-spin fa-2x"></i><p style="margin-top:12px">加载中...</p></div>';
   try {
-    if(page==='dashboard') loadDashboard();
-    else if(page==='users') loadUsers();
-    else if(page==='revenue') loadRevenue();
-    else if(page==='content') loadContent();
-    else if(page==='growth') loadGrowth();
-    else if(page==='settings') loadSettings();
+    if(page==='dashboard') await loadDashboard();
+    else if(page==='users') await loadUsers();
+    else if(page==='revenue') await loadRevenue();
+    else if(page==='content') await loadContent();
+    else if(page==='growth') await loadGrowth();
+    else if(page==='settings') await loadSettings();
     document.getElementById('updateTime').innerHTML = '<i class="far fa-clock"></i> '+new Date().toLocaleString('zh-CN');
   } catch(e) {
     el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--danger)"><i class="fas fa-exclamation-triangle fa-2x"></i><p style="margin-top:12px">'+e.message+'</p></div>';
