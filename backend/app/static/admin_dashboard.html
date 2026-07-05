@@ -54,87 +54,11 @@ tr:hover td{background:#F9FAFB}
 .stat-list li:last-child{border-bottom:none}
 .stat-list li span:last-child{font-weight:600}
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-/* Login */
-.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e);z-index:9999;display:flex;align-items:center;justify-content:center}
-.login-box{background:#fff;border-radius:16px;padding:40px;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
-.login-box h2{font-size:22px;margin-bottom:4px}
-.login-box p{font-size:13px;color:var(--text-secondary);margin-bottom:24px}
-.login-box input{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:8px;font-size:15px;outline:none;margin-bottom:16px;transition:border-color .2s}
-.login-box input:focus{border-color:var(--primary)}
-.login-box button{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;transition:background .2s}
-.login-box button:hover{background:var(--primary-dark)}
-.login-error{color:#EF4444;font-size:13px;margin-top:8px;display:none}
-@media(max-width:1024px){.sidebar{width:56px}.sidebar-logo h1,.sidebar-logo span,.sidebar-nav a span{display:none}.sidebar-nav a{justify-content:center;padding:12px;border-left:none}.main{margin-left:56px;width:calc(100% - 56px)}.charts-row{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
 
-<!-- Login Overlay -->
-<div class="login-overlay" id="loginOverlay">
-  <div class="login-box">
-    <h2><i class="fas fa-shield-alt" style="color:var(--primary)"></i> MindShift</h2>
-    <p>管理控制台</p>
-    <input type="password" id="loginPass" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter')checkLogin()">
-    <button onclick="checkLogin()"><i class="fas fa-lock"></i> 进入看板</button>
-    <div class="login-error" id="loginError">密码错误，请重试</div>
-  </div>
-</div>
 
-<div class="layout">
-  <aside class="sidebar">
-    <div class="sidebar-logo"><h1>MindShift</h1><span>管理控制台</span></div>
-    <nav class="sidebar-nav" id="sidebarNav">
-      <a href="#" data-page="dashboard" class="active"><i class="fas fa-chart-pie"></i><span>总览看板</span></a>
-      <a href="#" data-page="users"><i class="fas fa-users"></i><span>用户管理</span></a>
-      <a href="#" data-page="revenue"><i class="fas fa-credit-card"></i><span>付费分析</span></a>
-      <a href="#" data-page="content"><i class="fas fa-book-open"></i><span>内容管理</span></a>
-      <a href="#" data-page="growth"><i class="fas fa-chart-line"></i><span>增长趋势</span></a>
-      <a href="#" data-page="settings"><i class="fas fa-cog"></i><span>系统设置</span></a>
-    </nav>
-  </aside>
-  <div class="main">
-    <div class="topbar">
-      <h2><i class="fas fa-chart-pie"></i><span id="pageTitle">总览看板</span></h2>
-      <div class="topbar-right">
-        <span id="updateTime"><i class="far fa-clock"></i> 实时</span>
-        <a href="#" onclick="logout()" style="color:var(--text-secondary);font-size:13px;text-decoration:none"><i class="fas fa-sign-out-alt"></i> 退出</a>
-      </div>
-    </div>
-    <div class="content" id="mainContent"></div>
-  </div>
-</div>
 
-<script>
-// ─── Login ───
-// Password: MindShift2026 // SHA256 of "MindShift2026"
 
-function sha256(str){
-  const encoder = new TextEncoder();
-  return crypto.subtle.digest('SHA-256',encoder.encode(str)).then(function(buf){
-    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  });
-}
 
-function checkLogin(){
-  const pass = document.getElementById('loginPass').value;
-  sha256(pass).then(function(hash){
-    if(hash === PASSWORD_HASH){
-      document.getElementById('loginOverlay').style.display = 'none';
-      localStorage.setItem('mindshift_logged_in', '1');
-      initDashboard();
-    } else {
-      document.getElementById('loginError').style.display = 'block';
-      document.getElementById('loginPass').value = '';
-      document.getElementById('loginPass').focus();
-    }
-  });
-}
-
-function logout(){
-  localStorage.removeItem('mindshift_logged_in');
-  document.getElementById('loginOverlay').style.display = 'flex';
-  document.getElementById('loginError').style.display = 'none';
-}
 
 // ─── Dashboard ───
 let charts = {};
@@ -250,12 +174,7 @@ async function loadSettings(){
   document.getElementById('mainContent').innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="info-card"><h3><i class="fas fa-server"></i> 系统信息</h3><ul class="stat-list"><li><span>应用名称</span><span>'+d.app_name+'</span></li><li><span>版本</span><span>'+d.version+'</span></li><li><span>服务器时间</span><span>'+d.server_time+'</span></li><li><span>数据库</span><span>'+d.database+'</span></li></ul></div><div class="info-card"><h3><i class="fas fa-link"></i> 访问入口</h3><ul class="stat-list"><li><span>管理看板</span><span><a href="/admin" style="color:var(--primary)">/admin</a></span></li><li><span>API 文档</span><span><a href="/docs" style="color:var(--primary)">/docs</a></span></li><li><span>健康检查</span><span><a href="/api/v1/health" style="color:var(--primary)">/health</a></span></li></ul></div></div>';
 }
 
-function initDashboard(){
-  if(localStorage.getItem('mindshift_logged_in') === '1'){
-    document.getElementById('loginOverlay').style.display = 'none';
-    switchPage('dashboard');
-  }
-}
+
 
 // Check if already logged in
 if(localStorage.getItem('mindshift_logged_in') === '1'){

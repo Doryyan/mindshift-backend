@@ -83,16 +83,28 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     logger.info(f"{settings.APP_NAME} shutting down")
-
-# Serve admin dashboard
+# Serve admin dashboard with HTTP Basic Auth
+import base64
 from fastapi.responses import HTMLResponse
+from fastapi import Request
 import os
 
-dashboard_path = os.path.join(os.path.dirname(__file__), "static", "admin_dashboard.html")
-
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard():
-    if os.path.exists(dashboard_path):
-        with open(dashboard_path, "r") as f:
-            return f.read()
+async def admin_dashboard(request: Request):
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Basic "):
+        return HTMLResponse("Unauthorized", status_code=401,
+            headers={"WWW-Authenticate": "Basic realm=\"MindShift Admin\""})
+    try:
+        decoded = base64.b64decode(auth.split(" ")[1]).decode()
+        u, p = decoded.split(":", 1)
+    except:
+        return HTMLResponse("Invalid auth", status_code=401)
+    if u != "admin" or p != "MindShift2026":
+        return HTMLResponse("Wrong credentials", status_code=401)
+    fp = os.path.join(os.path.dirname(__file__), "static", "admin_dashboard.html")
+    if os.path.exists(fp):
+        with open(fp) as f:
+            return HTMLResponse(f.read())
+    return HTMLResponse("<h1>Dashboard not found</h1>")
     return "<h1>Dashboard file not found</h1>"
